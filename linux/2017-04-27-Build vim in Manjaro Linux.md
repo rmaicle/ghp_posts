@@ -1,11 +1,11 @@
 ---
-title: Build Vim in Manjaro Linux
+title: Build `vim` in Manjaro Linux
 date: 2017-04-27T15:31:32UTC
-excerpt: 
+excerpt: The default `vim` build packaged with Manjaro Linux did not include the clientserver feature which was necessary to make `vim` work with `ranger` inside `tilix` which was both recently explored.
 layout: post
-categories: [post, c++, d_language, database, linux, jekyll, other]
-tags: []
-published: false
+categories: [post, linux]
+tags: [vim, manjaro, tilix, ranger]
+published: true
 permalink: /posts/NgVX8g15ZMd29wZ
 thumbnail:
 image:
@@ -26,81 +26,198 @@ sources:
 related:
 ---
 
-Libraries
+The default `vim` build packaged with [Manjaro Linux](https://manjaro.org) did not include the clientserver feature which was necessary to make `vim` work with `ranger` inside `tilix` which was both recently explored. This post shows how I built `vim` fresh from its repository.
 
-ncurses 6.0+20170128-1
-libgnome 2.32.1-6
-gtk2 2.24.31-1
-atk 2.24.0-1
-libbonoboui 2.24.5-3
-cairo 1.14.8-1
-libx11 1.6.5-1
-libxpm 3.5.12-1
-libxt 1.1.5-1
-python 3.6.0-2
-ruby 2.4.0-1
-lua51 5.1.5-6
-perl 5.24.1-1
-git 2.12.2-2
+Tilix (1.5.6)
+: [Tilix](https://gnunn1.github.io/tilix-web/) is an advanced GTK+3 tiling terminal emulator using the VTE (Virtual Terminal Emulator) GTK widget. The application was designed in conformance to the  Gnome Human Interface Guidelines. Tilix is programmed using the D Programming Language using the D Language port of GTK+3.
 
-sudo pacman -S ncurses
-sudo pacman -S libgnome
-sudo pacman -S libgnomeui
-sudo pacman -S gtk2
-sudo pacman -S atk
-sudo pacman -S libbonoboui
-sudo pacman -S cairo
-sudo pacman -S libx11
-sudo pacman -S libxpm
-sudo pacman -S libxt
-sudo pacman -S python
-sudo pacman -S ruby
-sudo pacman -S lua51
-sudo pacman -S perl
-sudo pacman -S git
+Ranger (1.8.1)
+: [Ranger](http://ranger.nongnu.org) is a minimalistic console file manager in Linux with VI key bindings.
 
-install libncurses5-dev libgnome2-dev libgnomeui-dev \
-    libgtk2.0-dev libatk1.0-dev libbonoboui2-dev \
-    libcairo2-dev libx11-dev libxpm-dev libxt-dev python-dev \
-    python3-dev ruby-dev lua5.1 lua5.1-dev libperl-dev git
+The `vim` packaged with Manjaro Linux XFCE 17.0.1 (Gellivara) [update 2017-04-23](manjaro.org/2017/04/23/stable-update-2017-04-23-kernels-kde-framework-mesa-budgie/) is at version 8.0. I followed the steps detailed in this [post](https://github.com/Valloric/YouCompleteMe/wiki/Building-Vim-from-source) by Val Markovic.
 
-Remove vim
+Here are the steps in building `vim`:
 
-    sudo pacman -R vim
+1. Install required libraries.
+2. Remove `vim` if installed.
+3. Get the `vim` sources.
+4. Build and install.
 
-git clone https://github.com/vim/vim.git
-cd vim
-./configure --with-features=huge \
-            --enable-multibyte \
-            --enable-rubyinterp=yes \
-            --enable-pythoninterp=yes \
-            --enable-python3interp=yes \
-            --with-python3-config-dir=/usr/lib/python3.5/config-3.6m-x86_64-linux-gnu \
-            --enable-perlinterp=yes \
-            --enable-luainterp=yes \
-            --enable-gui=gtk2 --enable-cscope --prefix=/usr
-make VIMRUNTIMEDIR=/usr/share/vim/vim80
-sudo make install
+## Install Required Libraries for Building `vim`
 
+The currently installed versions of the libraries on my system.
 
+| Libraries   | Version | Description |
+|-------------|---------|-------------|
+| ncurses     | 6.0     | Programming library providing an application programming interface (API) that allows the programmer to write text-based user interfaces in a terminal-independent manner. [link](https://www.gnu.org/software/ncurses/ncurses.html)
+| libgnome    | 2.32.1  | Gnome Library [[link](developer.gnome.org/libgnome/stable/)]
+| gtk2        | 2.24.31 | Cross-platform GUI toolkit [[link](https://www.gtk.org)]
+| atk         | 2.24.0  | Accessibility Toolkit (ATK) refers in particular to the GNOME ATK, an application programming interface (API) for developing free/open source accessible applications for platforms such as Linux or OpenBSD. [[link](https://wiki.gnome.org/Accessibility)]
+| libbonoboui | 2.24.5  | Programming library that provides a number of user interface controls using the Bonobo component framework. [[link](https://developer.gnome.org/libbonobo/stable/index.html)] [[link](http://www.djcbsoftware.nl/projecten/nluug-bonobo/)]
+| cairo       | 1.14.8  | Programming library that provides a vector graphics-based, device-independent API for software developers. [[link](https://www.cairographics.org)]
+| libx11      | 1.6.5   | An X Window System protocol client library containing functions for interacting with an X server. These functions allow programmers to write programs without knowing the details of the protocol. [[link](https://www.x.org/archive/X11R7.5/doc/libX11/libX11.html)]
+| libxpm      | 3.5.12  | X11 pixmap library [[link](https://xorg.freedesktop.org/wiki/)]
+| libxt       | 1.1.5   | X11 toolkit intrinsics library [[link](https://xorg.freedesktop.org/wiki/)]
+| python      | 3.6.0   | A high-level programming language for general-purpose programming, created by Guido van Rossum and first released in 1991. [[link](https://www.python.org)]
+| ruby        | 2.4.0   | Is a dynamic, reflective, object-oriented, general-purpose programming language. It was designed and developed in the mid-1990s by Yukihiro "Matz" Matsumoto in Japan. [[link](https://www.ruby-lang.org/)]
+| lua51       | 5.1.5   | A powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description. [[link](https://www.lua.org)]
+| perl        | 5.24.1  | Is a high-level, general-purpose, interpreted, dynamic programming language which had its roots and was optimized for scanning arbitrary text files, extracting information from those text files, and printing reports based on that information. [[link](https://www.perl.org)]
+| git         | 2.12.2  | Is a distributed version control system created by Linus Torvalds in 2005 for the development of the Linux kernel aimed for speed, data integrity and non-linear workflow [[link](https://git-scm.com)]
 
--------------------------
+Execute the following commands or put in a script:
 
-./configure --with-features=huge \
-            --enable-multibyte \
-            --enable-rubyinterp=yes \
-            --enable-pythoninterp=yes \
-            --with-python-config-dir=/usr/lib/python2.7/config \
-            --enable-python3interp=yes \
-            --with-python3-config-dir=/usr/lib/python3.5/config \
-            --enable-perlinterp=yes \
-            --enable-luainterp=yes \
-            --enable-gui=gtk2 --enable-cscope --prefix=/usr
-make VIMRUNTIMEDIR=/usr/share/vim/vim80
-sudo make install
+~~~
+$ sudo pacman -S ncurses
+$ sudo pacman -S libgnome
+$ sudo pacman -S libgnomeui
+$ sudo pacman -S gtk2
+$ sudo pacman -S atk
+$ sudo pacman -S libbonoboui
+$ sudo pacman -S cairo
+$ sudo pacman -S libx11
+$ sudo pacman -S libxpm
+$ sudo pacman -S libxt
+$ sudo pacman -S python
+$ sudo pacman -S ruby
+$ sudo pacman -S lua51
+$ sudo pacman -S perl
+$ sudo pacman -S git
+~~~
 
--------------------------------------
+## Remove `vim`
 
+If it is possible, remove `vim` from the system.
+Currently, `cppman` is installed which is dependent on `vim` which I did not uninstall and gambled that things would turn out well.
+
+~~~
+$ sudo pacman -R vim
+~~~
+
+## Get the `vim` sources
+
+The `vim` sources is in [https://github.com/vim/vim.git](https://github.com/vim/vim.git).
+This is the only reason it was necessary to install `git`.
+
+~~~
+$ git clone https://github.com/vim/vim.git
+~~~
+    
+Since `vim` only needed to be built, the following command uses the "shallow clone".
+By providing the argument `--depth 1`, git is instructed to get the latest revision or the current HEAD of everything in the repository.
+
+## Build and Install
+
+Before building, the `configure` script needs to know the _python configuration directory_.
+On Manjaro XFCE, python 3.5 configuration directory is `/usr/lib/python3.5/config-3.6m-x86_64-linux-gnu`.
+The argument `--with-features=huge` includes the `clientserver` feature along with others I have not bothered to exclude.
+So, the build may be a little bloated.
+Excluding features that will not be used is a good idea and necessary if one wants to minimize resource use.
+
+~~~
+$ cd vim
+$ ./configure --with-features=huge \
+              --enable-multibyte \
+              --enable-rubyinterp=yes \
+              --enable-pythoninterp=yes \
+              --enable-python3interp=yes \
+              --with-python3-config-dir=/usr/lib/python3.5/config-3.6m-x86_64-linux-gnu \
+              --enable-perlinterp=yes \
+              --enable-luainterp=yes \
+              --enable-gui=gtk2 --enable-cscope --prefix=/usr
+~~~
+
+To build, run the command:
+
+~~~
+$ make VIMRUNTIMEDIR=/usr/share/vim/vim80
+~~~
+
+Then to install:
+
+~~~
+$ sudo make install
+~~~
+
+Here is the output of of the `--version` argument of the newly built `vim`.
+I noticed that I have built it with `GTK2 GUI` application which the packaged build did not have.
+Maybe, I need to reconfigure and rebuild.
+
+~~~
+$ vim --version
+VIM - Vi IMproved 8.0 (2016 Sep 12, compiled Apr 28 2017 00:39:16)
+Included patches: 1-586
+Compiled by spherehead@sphere-0
+Huge version with GTK2 GUI.  Features included (+) or not (-):
++acl             +file_in_path    +mouse_sgr       +tag_old_static
++arabic          +find_in_path    -mouse_sysmouse  -tag_any_white
++autocmd         +float           +mouse_urxvt     -tcl
++balloon_eval    +folding         +mouse_xterm     +termguicolors
++browse          -footer          +multi_byte      +terminfo
+++builtin_terms  +fork()          +multi_lang      +termresponse
++byte_offset     +gettext         -mzscheme        +textobjects
++channel         -hangul_input    +netbeans_intg   +timers
++cindent         +iconv           +num64           +title
++clientserver    +insert_expand   +packages        +toolbar
++clipboard       +job             +path_extra      +user_commands
++cmdline_compl   +jumplist        +perl            +vertsplit
++cmdline_hist    +keymap          +persistent_undo +virtualedit
++cmdline_info    +lambda          +postscript      +visual
++comments        +langmap         +printer         +visualextra
++conceal         +libcall         +profile         +viminfo
++cryptv          +linebreak       +python/dyn      +vreplace
++cscope          +lispindent      +python3/dyn     +wildignore
++cursorbind      +listcmds        +quickfix        +wildmenu
++cursorshape     +localmap        +reltime         +windows
++dialog_con_gui  +lua             +rightleft       +writebackup
++diff            +menu            +ruby            +X11
++digraphs        +mksession       +scrollbind      -xfontset
++dnd             +modify_fname    +signs           +xim
+-ebcdic          +mouse           +smartindent     +xpm
++emacs_tags      +mouseshape      +startuptime     +xsmp_interact
++eval            +mouse_dec       +statusline      +xterm_clipboard
++ex_extra        +mouse_gpm       -sun_workshop    -xterm_save
++extra_search    -mouse_jsbterm   +syntax          
++farsi           +mouse_netterm   +tag_binary      
+   system vimrc file: "$VIM/vimrc"
+     user vimrc file: "$HOME/.vimrc"
+ 2nd user vimrc file: "~/.vim/vimrc"
+      user exrc file: "$HOME/.exrc"
+  system gvimrc file: "$VIM/gvimrc"
+    user gvimrc file: "$HOME/.gvimrc"
+2nd user gvimrc file: "~/.vim/gvimrc"
+       defaults file: "$VIMRUNTIME/defaults.vim"
+    system menu file: "$VIMRUNTIME/menu.vim"
+  fall-back for $VIM: "/usr/share/vim"
+ f-b for $VIMRUNTIME: "/usr/share/vim/vim80"
+Compilation: gcc -c -I. -Iproto -DHAVE_CONFIG_H -DFEAT_GUI_GTK  -pthread
+-I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/pango-1.0
+-I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pixman-1
+-I/usr/include/libdrm -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16
+-I/usr/include/pango-1.0 -I/usr/include/freetype2 -I/usr/include/libpng16
+-I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include
+-I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz
+-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include
+-g -O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+Linking: gcc -L. -Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector
+-rdynamic -Wl,-export-dynamic -Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE
+-L/usr/local/lib -Wl,--as-needed -o vim -lgtk-x11-2.0 -lgdk-x11-2.0
+-lpangocairo-1.0 -latk-1.0 -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lpangoft2-1.0
+-lpango-1.0 -lgobject-2.0 -lglib-2.0 -lfontconfig -lfreetype
+-lSM -lICE -lXpm -lXt -lX11 -lXdmcp -lSM -lICE  -lm -lncurses -lelf -lnsl -lacl
+-lattr -lgpm -ldl -L/usr/lib -llua -Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE
+-Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector-strong -L/usr/local/lib
+-L/usr/lib/perl5/core_perl/CORE -lperl -lpthread -lnsl -ldl -lm -lcrypt -lutil -lc
+-lruby -lpthread -lgmp -ldl -lcrypt -lm
+~~~
+
+## Other Command Outputs (Extra)
+
+The following commmand outputs are for references only.
+They are included only for details.
+
+##### Packaged `vim` build
+
+~~~
 $ vim --version
 VIM - Vi IMproved 8.0 (2016 Sep 12, compiled Mar  6 2017 14:13:23)
 Included patches: 1-427
@@ -142,11 +259,21 @@ Huge version without GUI.  Features included (+) or not (-):
       user exrc file: "$HOME/.exrc"
        defaults file: "$VIMRUNTIME/defaults.vim"
   fall-back for $VIM: "/usr/share/vim"
-Compilation: gcc -c -I. -Iproto -DHAVE_CONFIG_H   -D_FORTIFY_SOURCE=2  -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1       
-Linking: gcc   -L. -Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector -rdynamic -Wl,-export-dynamic -Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE  -Wl,-O1,--sort-common,--as-needed,-z,relro -L/usr/local/lib -Wl,--as-needed -o vim        -lm -lncurses -lelf -lnsl    -lacl -lattr -lgpm -ldl   -Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE -Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector-strong -L/usr/local/lib  -L/usr/lib/perl5/core_perl/CORE -lperl -lpthread -lnsl -ldl -lm -lcrypt -lutil -lc   -L/usr/lib -ltclstub8.6 -ldl -lz -lpthread -lieee -lm  
+Compilation: gcc -c -I. -Iproto -DHAVE_CONFIG_H -D_FORTIFY_SOURCE=2  -march=x86-64
+-mtune=generic -O2 -pipe -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+Linking: gcc -L. -Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector -rdynamic
+-Wl,-export-dynamic -Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE
+-Wl,-O1,--sort-common,--as-needed,-z,relro -L/usr/local/lib -Wl,--as-needed
+-o vim -lm -lncurses -lelf -lnsl -lacl -lattr -lgpm -ldl
+-Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE
+-Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector-strong
+-L/usr/local/lib -L/usr/lib/perl5/core_perl/CORE -lperl -lpthread -lnsl -ldl -lm -lcrypt
+-lutil -lc -L/usr/lib -ltclstub8.6 -ldl -lz -lpthread -lieee -lm
+~~~
 
--------------------------------------------------------
+##### `configure` command output
 
+~~~
 $ ./configure --with-features=huge \
               --enable-multibyte \
               --enable-rubyinterp=yes \
@@ -236,7 +363,8 @@ checking Python is 3.0 or better... yep
 checking Python's abiflags... (cached) m
 checking Python's install prefix... (cached) /usr
 checking Python's execution prefix... (cached) /usr
-(cached) checking Python's configuration directory... (cached) /usr/lib/python3.5/config-3.6m-x86_64-linux-gnu
+(cached) checking Python's configuration directory... (cached)
+         /usr/lib/python3.5/config-3.6m-x86_64-linux-gnu
 (cached) checking Python3's dll name... (cached) 
 checking if -pthread should be used... yes
 checking if compile and link flags for Python 3 are sane... yes
@@ -482,9 +610,11 @@ configure: creating auto/config.status
 config.status: creating auto/config.mk
 config.status: creating auto/config.h
 config.status: auto/config.h is unchanged
+~~~
 
--------------------------------------------------------
+##### `make` command output
 
+~~~
 $ sudo make install
 [sudo] password for spherehead: 
 Starting make in the src directory.
@@ -500,7 +630,9 @@ strip /usr/bin/vim
 chmod 755 /usr/bin/vim
 cp vimtutor /usr/bin/vimtutor
 chmod 755 /usr/bin/vimtutor
-/bin/sh ./installman.sh install /usr/share/man/man1 "" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/man1 ""
+         /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc
+         644 vim vimdiff evim
 installing /usr/share/man/man1/vim.1
 installing /usr/share/man/man1/vimtutor.1
 installing /usr/share/man/man1/vimdiff.1
@@ -578,7 +710,8 @@ cp -r ../runtime/macros/* /usr/share/vim/vim80/macros
 chmod 755 `find /usr/share/vim/vim80/macros -type d -print`
 chmod 644 `find /usr/share/vim/vim80/macros -type f -print`
 chmod 755 /usr/share/vim/vim80/macros/less.sh
-cvs=`find /usr/share/vim/vim80/macros \( -name CVS -o -name AAPDIR -o -name "*.info" \) -print`; \
+cvs=`find /usr/share/vim/vim80/macros \( -name CVS -o -name AAPDIR -o -name "*.info" \)
+    -print`; \
       if test -n "$cvs"; then \
 	 rm -rf $cvs; \
       fi
@@ -589,8 +722,10 @@ cp ../runtime/tutor/README* ../runtime/tutor/tutor* /usr/share/vim/vim80/tutor
 rm -f /usr/share/vim/vim80/tutor/*.info
 chmod 644 /usr/share/vim/vim80/tutor/*
 if test -f ../runtime/spell/en.latin1.spl; then \
-  cp ../runtime/spell/*.spl ../runtime/spell/*.sug ../runtime/spell/*.vim /usr/share/vim/vim80/spell; \
-  chmod 644 /usr/share/vim/vim80/spell/*.spl /usr/share/vim/vim80/spell/*.sug /usr/share/vim/vim80/spell/*.vim; \
+  cp ../runtime/spell/*.spl ../runtime/spell/*.sug ../runtime/spell/*.vim
+     /usr/share/vim/vim80/spell; \
+  chmod 644 /usr/share/vim/vim80/spell/*.spl /usr/share/vim/vim80/spell/*.sug
+     /usr/share/vim/vim80/spell/*.vim; \
 fi
 cd /usr/bin; ln -s vim gvim
 cd /usr/bin; ln -s vim gview
@@ -602,7 +737,8 @@ cd /usr/bin; ln -s vim gvimdiff
 cd /usr/bin; ln -s vim ex
 cd /usr/bin; ln -s vim view
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview
+    gvimdiff eview
 creating link /usr/share/man/man1/ex.1
 creating link /usr/share/man/man1/view.1
 creating link /usr/share/man/man1/rvim.1
@@ -613,29 +749,41 @@ creating link /usr/share/man/man1/rgvim.1
 creating link /usr/share/man/man1/rgview.1
 creating link /usr/share/man/man1/gvimdiff.1
 creating link /usr/share/man/man1/eview.1
-/bin/sh ./installman.sh xxd /usr/share/man/fr/man1 "-fr" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/fr/man1 "-fr" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/fr/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/fr.ISO8859-1/man1 "-fr" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/fr.ISO8859-1/man1 "-fr" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/fr.ISO8859-1/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/fr.UTF-8/man1 "-fr.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/fr.UTF-8/man1 "-fr.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/fr.UTF-8/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/it/man1 "-it" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/it/man1 "-it" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/it/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/it.ISO8859-1/man1 "-it" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/it.ISO8859-1/man1 "-it" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/it.ISO8859-1/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/it.UTF-8/man1 "-it.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/it.UTF-8/man1 "-it.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/it.UTF-8/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/ja/man1 "-ja.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/ja/man1 "-ja.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/ja/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/pl/man1 "-pl" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/pl/man1 "-pl" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/pl/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/pl.ISO8859-2/man1 "-pl" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/pl.ISO8859-2/man1 "-pl" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/pl.ISO8859-2/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/pl.UTF-8/man1 "-pl.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/pl.UTF-8/man1 "-pl.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/pl.UTF-8/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/ru.KOI8-R/man1 "-ru" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/ru.KOI8-R/man1 "-ru" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/ru.KOI8-R/man1/xxd.1
-/bin/sh ./installman.sh xxd /usr/share/man/ru.UTF-8/man1 "-ru.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/ru.UTF-8/man1 "-ru.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/ru.UTF-8/man1/xxd.1
 if test -f /usr/bin/xxd; then \
   mv -f /usr/bin/xxd /usr/bin/xxd.rm; \
@@ -644,7 +792,8 @@ fi
 cp xxd/xxd /usr/bin
 strip /usr/bin/xxd
 chmod 755 /usr/bin/xxd
-/bin/sh ./installman.sh xxd /usr/share/man/man1 "" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh xxd /usr/share/man/man1 "" /usr/share/vim /usr/share/vim/vim80
+         /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/man1/xxd.1
 cp -r ../runtime/tools/* /usr/share/vim/vim80/tools
 cvs=`find /usr/share/vim/vim80/tools \( -name CVS -o -name AAPDIR \) -print`; \
@@ -652,10 +801,15 @@ cvs=`find /usr/share/vim/vim80/tools \( -name CVS -o -name AAPDIR \) -print`; \
 	 rm -rf $cvs; \
       fi
 chmod 644 /usr/share/vim/vim80/tools/*
-perlpath=`./which.sh perl` && sed -e "s+/usr/bin/perl+$perlpath+" ../runtime/tools/efm_perl.pl >/usr/share/vim/vim80/tools/efm_perl.pl
-awkpath=`./which.sh nawk` && sed -e "s+/usr/bin/nawk+$awkpath+" ../runtime/tools/mve.awk >/usr/share/vim/vim80/tools/mve.awk; if test -z "$awkpath"; then \
-	awkpath=`./which.sh gawk` && sed -e "s+/usr/bin/nawk+$awkpath+" ../runtime/tools/mve.awk >/usr/share/vim/vim80/tools/mve.awk; if test -z "$awkpath"; then \
-	awkpath=`./which.sh awk` && sed -e "s+/usr/bin/nawk+$awkpath+" ../runtime/tools/mve.awk >/usr/share/vim/vim80/tools/mve.awk; fi; fi
+perlpath=`./which.sh perl` && sed -e "s+/usr/bin/perl+$perlpath+"
+         ../runtime/tools/efm_perl.pl >/usr/share/vim/vim80/tools/efm_perl.pl
+awkpath=`./which.sh nawk` && sed -e "s+/usr/bin/nawk+$awkpath+" ../runtime/tools/mve.awk
+        >/usr/share/vim/vim80/tools/mve.awk; if test -z "$awkpath"; then \
+	awkpath=`./which.sh gawk` && sed -e "s+/usr/bin/nawk+$awkpath+"
+            ../runtime/tools/mve.awk >/usr/share/vim/vim80/tools/mve.awk;
+            if test -z "$awkpath"; then \
+	awkpath=`./which.sh awk` && sed -e "s+/usr/bin/nawk+$awkpath+"
+            ../runtime/tools/mve.awk >/usr/share/vim/vim80/tools/mve.awk; fi; fi
 chmod 755 `grep -l "^#!" /usr/share/vim/vim80/tools/*`
 make[2]: Entering directory '/mnt/work/projects/_github/vim-compile/src/po'
 make[2]: Nothing to be done for 'first'.
@@ -663,68 +817,81 @@ make[2]: Leaving directory '/mnt/work/projects/_github/vim-compile/src/po'
 make[2]: Entering directory '/mnt/work/projects/_github/vim-compile/src/po'
 make[2]: Nothing to be done for 'converted'.
 make[2]: Leaving directory '/mnt/work/projects/_github/vim-compile/src/po'
-/bin/sh ./installman.sh install /usr/share/man/fr/man1 "-fr" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/fr/man1 "-fr" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/fr/man1/vim.1
 installing /usr/share/man/fr/man1/vimtutor.1
 installing /usr/share/man/fr/man1/vimdiff.1
 installing /usr/share/man/fr/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/fr.ISO8859-1/man1 "-fr" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/fr.ISO8859-1/man1 "-fr" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/fr.ISO8859-1/man1/vim.1
 installing /usr/share/man/fr.ISO8859-1/man1/vimtutor.1
 installing /usr/share/man/fr.ISO8859-1/man1/vimdiff.1
 installing /usr/share/man/fr.ISO8859-1/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/fr.UTF-8/man1 "-fr.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/fr.UTF-8/man1 "-fr.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/fr.UTF-8/man1/vim.1
 installing /usr/share/man/fr.UTF-8/man1/vimtutor.1
 installing /usr/share/man/fr.UTF-8/man1/vimdiff.1
 installing /usr/share/man/fr.UTF-8/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/it/man1 "-it" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/it/man1 "-it" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/it/man1/vim.1
 installing /usr/share/man/it/man1/vimtutor.1
 installing /usr/share/man/it/man1/vimdiff.1
 installing /usr/share/man/it/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/it.ISO8859-1/man1 "-it" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/it.ISO8859-1/man1 "-it" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/it.ISO8859-1/man1/vim.1
 installing /usr/share/man/it.ISO8859-1/man1/vimtutor.1
 installing /usr/share/man/it.ISO8859-1/man1/vimdiff.1
 installing /usr/share/man/it.ISO8859-1/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/it.UTF-8/man1 "-it.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/it.UTF-8/man1 "-it.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/it.UTF-8/man1/vim.1
 installing /usr/share/man/it.UTF-8/man1/vimtutor.1
 installing /usr/share/man/it.UTF-8/man1/vimdiff.1
 installing /usr/share/man/it.UTF-8/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/ja/man1 "-ja.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/ja/man1 "-ja.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/ja/man1/vim.1
 installing /usr/share/man/ja/man1/vimtutor.1
 installing /usr/share/man/ja/man1/vimdiff.1
 installing /usr/share/man/ja/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/pl/man1 "-pl" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/pl/man1 "-pl" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/pl/man1/vim.1
 installing /usr/share/man/pl/man1/vimtutor.1
 installing /usr/share/man/pl/man1/vimdiff.1
 installing /usr/share/man/pl/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/pl.ISO8859-2/man1 "-pl" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/pl.ISO8859-2/man1 "-pl" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/pl.ISO8859-2/man1/vim.1
 installing /usr/share/man/pl.ISO8859-2/man1/vimtutor.1
 installing /usr/share/man/pl.ISO8859-2/man1/vimdiff.1
 installing /usr/share/man/pl.ISO8859-2/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/pl.UTF-8/man1 "-pl.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/pl.UTF-8/man1 "-pl.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/pl.UTF-8/man1/vim.1
 installing /usr/share/man/pl.UTF-8/man1/vimtutor.1
 installing /usr/share/man/pl.UTF-8/man1/vimdiff.1
 installing /usr/share/man/pl.UTF-8/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/ru.KOI8-R/man1 "-ru" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/ru.KOI8-R/man1 "-ru" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/ru.KOI8-R/man1/vim.1
 installing /usr/share/man/ru.KOI8-R/man1/vimtutor.1
 installing /usr/share/man/ru.KOI8-R/man1/vimdiff.1
 installing /usr/share/man/ru.KOI8-R/man1/evim.1
-/bin/sh ./installman.sh install /usr/share/man/ru.UTF-8/man1 "-ru.UTF-8" /usr/share/vim /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
+/bin/sh ./installman.sh install /usr/share/man/ru.UTF-8/man1 "-ru.UTF-8" /usr/share/vim
+         /usr/share/vim/vim80 /usr/share/vim ../runtime/doc 644 vim vimdiff evim
 installing /usr/share/man/ru.UTF-8/man1/vim.1
 installing /usr/share/man/ru.UTF-8/man1/vimtutor.1
 installing /usr/share/man/ru.UTF-8/man1/vimdiff.1
 installing /usr/share/man/ru.UTF-8/man1/evim.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/fr/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/fr/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview
+    gvimdiff eview
 creating link /usr/share/man/fr/man1/ex.1
 creating link /usr/share/man/fr/man1/view.1
 creating link /usr/share/man/fr/man1/rvim.1
@@ -736,7 +903,8 @@ creating link /usr/share/man/fr/man1/rgview.1
 creating link /usr/share/man/fr/man1/gvimdiff.1
 creating link /usr/share/man/fr/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/fr.ISO8859-1/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/fr.ISO8859-1/man1 vim vimdiff evim ex view rvim rview gvim gview
+    rgvim rgview gvimdiff eview
 creating link /usr/share/man/fr.ISO8859-1/man1/ex.1
 creating link /usr/share/man/fr.ISO8859-1/man1/view.1
 creating link /usr/share/man/fr.ISO8859-1/man1/rvim.1
@@ -748,7 +916,8 @@ creating link /usr/share/man/fr.ISO8859-1/man1/rgview.1
 creating link /usr/share/man/fr.ISO8859-1/man1/gvimdiff.1
 creating link /usr/share/man/fr.ISO8859-1/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/fr.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/fr.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim
+    rgview gvimdiff eview
 creating link /usr/share/man/fr.UTF-8/man1/ex.1
 creating link /usr/share/man/fr.UTF-8/man1/view.1
 creating link /usr/share/man/fr.UTF-8/man1/rvim.1
@@ -760,7 +929,8 @@ creating link /usr/share/man/fr.UTF-8/man1/rgview.1
 creating link /usr/share/man/fr.UTF-8/man1/gvimdiff.1
 creating link /usr/share/man/fr.UTF-8/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/it/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/it/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim
+    rgview gvimdiff eview
 creating link /usr/share/man/it/man1/ex.1
 creating link /usr/share/man/it/man1/view.1
 creating link /usr/share/man/it/man1/rvim.1
@@ -772,7 +942,8 @@ creating link /usr/share/man/it/man1/rgview.1
 creating link /usr/share/man/it/man1/gvimdiff.1
 creating link /usr/share/man/it/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/it.ISO8859-1/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/it.ISO8859-1/man1 vim vimdiff evim ex view rvim rview gvim
+    gview rgvim rgview gvimdiff eview
 creating link /usr/share/man/it.ISO8859-1/man1/ex.1
 creating link /usr/share/man/it.ISO8859-1/man1/view.1
 creating link /usr/share/man/it.ISO8859-1/man1/rvim.1
@@ -784,7 +955,8 @@ creating link /usr/share/man/it.ISO8859-1/man1/rgview.1
 creating link /usr/share/man/it.ISO8859-1/man1/gvimdiff.1
 creating link /usr/share/man/it.ISO8859-1/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/it.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/it.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview
+    rgvim rgview gvimdiff eview
 creating link /usr/share/man/it.UTF-8/man1/ex.1
 creating link /usr/share/man/it.UTF-8/man1/view.1
 creating link /usr/share/man/it.UTF-8/man1/rvim.1
@@ -796,7 +968,8 @@ creating link /usr/share/man/it.UTF-8/man1/rgview.1
 creating link /usr/share/man/it.UTF-8/man1/gvimdiff.1
 creating link /usr/share/man/it.UTF-8/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/ja/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/ja/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim
+    rgview gvimdiff eview
 creating link /usr/share/man/ja/man1/ex.1
 creating link /usr/share/man/ja/man1/view.1
 creating link /usr/share/man/ja/man1/rvim.1
@@ -808,7 +981,8 @@ creating link /usr/share/man/ja/man1/rgview.1
 creating link /usr/share/man/ja/man1/gvimdiff.1
 creating link /usr/share/man/ja/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/pl/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/pl/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim
+    rgview gvimdiff eview
 creating link /usr/share/man/pl/man1/ex.1
 creating link /usr/share/man/pl/man1/view.1
 creating link /usr/share/man/pl/man1/rvim.1
@@ -820,7 +994,8 @@ creating link /usr/share/man/pl/man1/rgview.1
 creating link /usr/share/man/pl/man1/gvimdiff.1
 creating link /usr/share/man/pl/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/pl.ISO8859-2/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/pl.ISO8859-2/man1 vim vimdiff evim ex view rvim rview gvim
+    gview rgvim rgview gvimdiff eview
 creating link /usr/share/man/pl.ISO8859-2/man1/ex.1
 creating link /usr/share/man/pl.ISO8859-2/man1/view.1
 creating link /usr/share/man/pl.ISO8859-2/man1/rvim.1
@@ -832,7 +1007,8 @@ creating link /usr/share/man/pl.ISO8859-2/man1/rgview.1
 creating link /usr/share/man/pl.ISO8859-2/man1/gvimdiff.1
 creating link /usr/share/man/pl.ISO8859-2/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/pl.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/pl.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview
+    rgvim rgview gvimdiff eview
 creating link /usr/share/man/pl.UTF-8/man1/ex.1
 creating link /usr/share/man/pl.UTF-8/man1/view.1
 creating link /usr/share/man/pl.UTF-8/man1/rvim.1
@@ -844,7 +1020,8 @@ creating link /usr/share/man/pl.UTF-8/man1/rgview.1
 creating link /usr/share/man/pl.UTF-8/man1/gvimdiff.1
 creating link /usr/share/man/pl.UTF-8/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/ru.KOI8-R/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/ru.KOI8-R/man1 vim vimdiff evim ex view rvim rview gvim gview
+    rgvim rgview gvimdiff eview
 creating link /usr/share/man/ru.KOI8-R/man1/ex.1
 creating link /usr/share/man/ru.KOI8-R/man1/view.1
 creating link /usr/share/man/ru.KOI8-R/man1/rvim.1
@@ -856,7 +1033,8 @@ creating link /usr/share/man/ru.KOI8-R/man1/rgview.1
 creating link /usr/share/man/ru.KOI8-R/man1/gvimdiff.1
 creating link /usr/share/man/ru.KOI8-R/man1/eview.1
 /bin/sh ./installml.sh install "yes" \
-	/usr/share/man/ru.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview rgvim rgview gvimdiff eview
+	/usr/share/man/ru.UTF-8/man1 vim vimdiff evim ex view rvim rview gvim gview
+    rgvim rgview gvimdiff eview
 creating link /usr/share/man/ru.UTF-8/man1/ex.1
 creating link /usr/share/man/ru.UTF-8/man1/view.1
 creating link /usr/share/man/ru.UTF-8/man1/rvim.1
@@ -874,7 +1052,9 @@ fi
 make[2]: Entering directory '/mnt/work/projects/_github/vim-compile/src/po'
 make[3]: Entering directory '/mnt/work/projects/_github/vim-compile/src/po'
 make[3]: Leaving directory '/mnt/work/projects/_github/vim-compile/src/po'
-for lang in af ca cs de en_GB eo es fi fr ga it ja ko ko.UTF-8 nb nl no pl pt_BR ru sk sv uk vi zh_CN zh_CN.UTF-8 zh_TW zh_TW.UTF-8 cs.cp1250 ja.sjis ja.euc-jp pl.cp1250 pl.UTF-8 ru.cp1251 sk.cp1250 uk.cp1251 zh_CN.cp936; do \
+for lang in af ca cs de en_GB eo es fi fr ga it ja ko ko.UTF-8 nb nl no pl
+  pt_BR ru sk sv uk vi zh_CN zh_CN.UTF-8 zh_TW zh_TW.UTF-8 cs.cp1250 ja.sjis
+  ja.euc-jp pl.cp1250 pl.UTF-8 ru.cp1251 sk.cp1250 uk.cp1251 zh_CN.cp936; do \
   dir=/usr/share/vim/vim80/lang/$lang/; \
   if test ! -x "$dir"; then \
     mkdir $dir; chmod 755 $dir; \
@@ -898,7 +1078,8 @@ if test -d ../runtime/keymap; then \
    chmod 644 /usr/share/vim/vim80/keymap/README.txt /usr/share/vim/vim80/keymap/*.vim; \
 fi
 if test -n ""; then \
-	/bin/sh install-sh -c -d /usr/share/icons/hicolor/48x48/apps /usr/share/icons/locolor/32x32/apps \
+	/bin/sh install-sh -c -d /usr/share/icons/hicolor/48x48/apps \
+    /usr/share/icons/locolor/32x32/apps \
 	/usr/share/icons/locolor/16x16/apps /usr/share/applications; \
 fi
 if test -d /usr/share/icons/hicolor/48x48/apps -a -w /usr/share/icons/hicolor/48x48/apps \
@@ -929,54 +1110,7 @@ fi
 cp gvimtutor /usr/bin/gvimtutor
 chmod 755 /usr/bin/gvimtutor
 make[1]: Leaving directory '/mnt/work/projects/_github/vim-compile/src'
+~~~
 
--------------------------------------------------------
 
-$ vim --version
-VIM - Vi IMproved 8.0 (2016 Sep 12, compiled Apr 28 2017 00:39:16)
-Included patches: 1-586
-Compiled by spherehead@sphere-0
-Huge version with GTK2 GUI.  Features included (+) or not (-):
-+acl             +file_in_path    +mouse_sgr       +tag_old_static
-+arabic          +find_in_path    -mouse_sysmouse  -tag_any_white
-+autocmd         +float           +mouse_urxvt     -tcl
-+balloon_eval    +folding         +mouse_xterm     +termguicolors
-+browse          -footer          +multi_byte      +terminfo
-++builtin_terms  +fork()          +multi_lang      +termresponse
-+byte_offset     +gettext         -mzscheme        +textobjects
-+channel         -hangul_input    +netbeans_intg   +timers
-+cindent         +iconv           +num64           +title
-+clientserver    +insert_expand   +packages        +toolbar
-+clipboard       +job             +path_extra      +user_commands
-+cmdline_compl   +jumplist        +perl            +vertsplit
-+cmdline_hist    +keymap          +persistent_undo +virtualedit
-+cmdline_info    +lambda          +postscript      +visual
-+comments        +langmap         +printer         +visualextra
-+conceal         +libcall         +profile         +viminfo
-+cryptv          +linebreak       +python/dyn      +vreplace
-+cscope          +lispindent      +python3/dyn     +wildignore
-+cursorbind      +listcmds        +quickfix        +wildmenu
-+cursorshape     +localmap        +reltime         +windows
-+dialog_con_gui  +lua             +rightleft       +writebackup
-+diff            +menu            +ruby            +X11
-+digraphs        +mksession       +scrollbind      -xfontset
-+dnd             +modify_fname    +signs           +xim
--ebcdic          +mouse           +smartindent     +xpm
-+emacs_tags      +mouseshape      +startuptime     +xsmp_interact
-+eval            +mouse_dec       +statusline      +xterm_clipboard
-+ex_extra        +mouse_gpm       -sun_workshop    -xterm_save
-+extra_search    -mouse_jsbterm   +syntax          
-+farsi           +mouse_netterm   +tag_binary      
-   system vimrc file: "$VIM/vimrc"
-     user vimrc file: "$HOME/.vimrc"
- 2nd user vimrc file: "~/.vim/vimrc"
-      user exrc file: "$HOME/.exrc"
-  system gvimrc file: "$VIM/gvimrc"
-    user gvimrc file: "$HOME/.gvimrc"
-2nd user gvimrc file: "~/.vim/gvimrc"
-       defaults file: "$VIMRUNTIME/defaults.vim"
-    system menu file: "$VIMRUNTIME/menu.vim"
-  fall-back for $VIM: "/usr/share/vim"
- f-b for $VIMRUNTIME: "/usr/share/vim/vim80"
-Compilation: gcc -c -I. -Iproto -DHAVE_CONFIG_H -DFEAT_GUI_GTK  -pthread -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/pango-1.0 -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/libdrm -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16 -I/usr/include/pango-1.0 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include   -g -O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1       
-Linking: gcc   -L. -Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector -rdynamic -Wl,-export-dynamic -Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE   -L/usr/local/lib -Wl,--as-needed -o vim   -lgtk-x11-2.0 -lgdk-x11-2.0 -lpangocairo-1.0 -latk-1.0 -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lpangoft2-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lfontconfig -lfreetype -lSM -lICE -lXpm -lXt -lX11 -lXdmcp -lSM -lICE  -lm -lncurses -lelf -lnsl    -lacl -lattr -lgpm -ldl  -L/usr/lib -llua -Wl,-E -Wl,-rpath,/usr/lib/perl5/core_perl/CORE -Wl,-O1,--sort-common,--as-needed,-z,relro -fstack-protector-strong -L/usr/local/lib  -L/usr/lib/perl5/core_perl/CORE -lperl -lpthread -lnsl -ldl -lm -lcrypt -lutil -lc    -lruby -lpthread -lgmp -ldl -lcrypt -lm     
+
