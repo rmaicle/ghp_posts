@@ -21,7 +21,7 @@ videos:
     attribution: 
     layout: 
 sources:
-  - label: article title (source)
+  - label: Building Vim from source (Valloric)
     link: https://github.com/Valloric/YouCompleteMe/wiki/Building-Vim-from-source
 related:
 ---
